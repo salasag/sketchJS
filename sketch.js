@@ -17,7 +17,7 @@ var mousePrevPressed = false;
 function setup(){
     createCanvas(CANVAS_WIDTH,CANVAS_HEIGHT);
     background(0);
-    frameRate(120);
+    frameRate(60);
 }
 
 function draw(){
@@ -33,20 +33,22 @@ function preload(){
 }
 
 function bounce(){
-
-    var numBalls = 100;
+    if(mouseIsPressed){
+        background(0);
+    }
+    var numBalls = 10;
     var scale = CANVAS_HEIGHT/(2*Math.PI*FPS);
-    var accvel = 113.09;
+    var accvel = 36*Math.PI;
     if(init == 0){
         for(var i = 0; i < numBalls; i++){
-            ballHeight[i] = (CANVAS_HEIGHT/2)*Math.sin(i/numBalls*Math.PI);
+            ballHeight[i] = (CANVAS_HEIGHT/2)*Math.sin(i/numBalls*2*Math.PI);
             if(i < numBalls/2){
                 ballDirection[i] =  1;
                 ballSpeed[i] = Math.cos((ballHeight[i])/CANVAS_HEIGHT*Math.PI)*scale;
             }
             else{
                 ballDirection[i] =  1;
-                ballSpeed[i] = -Math.cos((ballHeight[i])/CANVAS_HEIGHT*Math.PI)*scale;
+                ballSpeed[i] = Math.cos((ballHeight[i])/CANVAS_HEIGHT*Math.PI)*scale;
             }
         }
         init = 1;
@@ -56,22 +58,24 @@ function bounce(){
     }
 
     for(var i = 0; i < numBalls; i++){
-        drawBall(ballHeight[i],i/numBalls*Math.PI);
-        if(i < numBalls/2){
-            ballSpeed[i] = ballSpeed[i] - Math.sin((ballHeight[i])/CANVAS_HEIGHT*Math.PI)/accvel;
+        drawBall(ballHeight[i],i/numBalls*2*Math.PI);
+        if(!mouseIsPressed){
+            if(i < numBalls/2){
+                ballSpeed[i] = ballSpeed[i] - Math.sin((ballHeight[i])/CANVAS_HEIGHT*Math.PI)/accvel;
+            }
+            else{
+                ballSpeed[i] = ballSpeed[i] - Math.sin((ballHeight[i])/CANVAS_HEIGHT*Math.PI)/accvel;// / FPS;
+            }
+            ballHeight[i] = ballHeight[i] + ballDirection[i] * ballSpeed[i];// * ballSpeedMod/FPS;
         }
-        else{
-            ballSpeed[i] = ballSpeed[i] - Math.sin((ballHeight[i])/CANVAS_HEIGHT*Math.PI)/accvel;// / FPS;
-        }
-        ballHeight[i] = ballHeight[i] + ballDirection[i] * ballSpeed[i];// * ballSpeedMod/FPS;
     }
     if(mouseIsPressed){
         mousePrevPressed = true;
     }
-    if (mousePrevPressed && !mouseIsPressed){
+    if (mouseIsPressed){ // mousePrevPressed && !
         var mouseRelX = mouseX - CANVAS_WIDTH/2;
         var mouseRelY = mouseY - CANVAS_HEIGHT/2;
-        var newHeight = Math.max(-CANVAS_HEIGHT/2,Math.min(CANVAS_HEIGHT/2,Math.sqrt(mouseRelX*mouseRelX+mouseRelY*mouseRelY) * Math.sign(mouseRelX)));
+        var newHeight = Math.max(-CANVAS_HEIGHT/2,Math.min(CANVAS_HEIGHT/2,-Math.sqrt(mouseRelX*mouseRelX+mouseRelY*mouseRelY))); //* Math.sign(mouseRelX)
         var angle = 0;
         if(mouseRelX == 0){
             angle = 0;
@@ -80,37 +84,36 @@ function bounce(){
             angle = Math.PI/2;
         }
         else {
-            angle = Math.atan(mouseRelY/mouseRelX)+Math.PI/2;
+            angle = Math.atan(mouseRelY/mouseRelX)+Math.PI+Math.PI/2*Math.sign(mouseRelX);
         }
-        var ballIndex = Math.floor((angle/Math.PI)*numBalls)%numBalls;
+        var ballIndex = Math.floor((angle/2/Math.PI)*numBalls)%numBalls;
         ballHeight[ballIndex] = newHeight;
         ballSpeed[ballIndex] = Math.cos((ballHeight[ballIndex])/CANVAS_HEIGHT*Math.PI)*scale;
         var prevIndex = (ballIndex-1)%numBalls;
         var nextIndex = (ballIndex+1)%numBalls;
         var elasticity = 1; // Between 0 and 1
-        console.log("Start")
-        while(Math.abs(prevIndex - nextIndex) > 1){
-            console.log("Loop")
-            var prevPrevIndex = (prevIndex+1)%numBalls;
-            ballHeight[prevIndex] = (1-elasticity)*ballHeight[prevIndex] + (elasticity)*ballHeight[prevPrevIndex];
-            if(prevIndex < numBalls/2){
-                ballSpeed[prevIndex] = Math.cos((ballHeight[prevIndex])/CANVAS_HEIGHT*Math.PI)*scale;
-            }
-            else{
-                ballSpeed[prevIndex] = -Math.cos((ballHeight[prevIndex])/CANVAS_HEIGHT*Math.PI)*scale;
-            }
-            var prevIndex = (prevIndex-1)%numBalls;
+        // while(Math.abs(prevIndex - nextIndex) > 1){
+        //     var prevPrevIndex = (prevIndex+1)%numBalls;
+        //     ballHeight[prevIndex] = (1-elasticity)*ballHeight[prevIndex] + (elasticity)*ballHeight[prevPrevIndex];
+        //     if(prevIndex < numBalls/2){
+        //         ballSpeed[prevIndex] = Math.cos((ballHeight[prevIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     else{
+        //         ballSpeed[prevIndex] = -Math.cos((ballHeight[prevIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     var prevIndex = (prevIndex-1)%numBalls;
 
-            var prevNextIndex = (nextIndex-1)%numBalls;
-            ballHeight[nextIndex] = (1-elasticity)*ballHeight[nextIndex] + (elasticity)*ballHeight[prevNextIndex];
-            if(nextIndex < numBalls/2){
-                ballSpeed[nextIndex] = Math.cos((ballHeight[nextIndex])/CANVAS_HEIGHT*Math.PI)*scale;
-            }
-            else{
-                ballSpeed[nextIndex] = -Math.cos((ballHeight[nextIndex])/CANVAS_HEIGHT*Math.PI)*scale;
-            }
-            var nextIndex = (nextIndex+1)%numBalls;
-        }
+        //     var prevNextIndex = (nextIndex-1)%numBalls;
+        //     ballHeight[nextIndex] = (1-elasticity)*ballHeight[nextIndex] + (elasticity)*ballHeight[prevNextIndex];
+        //     if(nextIndex < numBalls/2){
+        //         ballSpeed[nextIndex] = Math.cos((ballHeight[nextIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     else{
+        //         ballSpeed[nextIndex] = -Math.cos((ballHeight[nextIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     var nextIndex = (nextIndex+1)%numBalls;
+        // }
+        mousePrevPressed = false;
     }
 
 }
@@ -194,6 +197,87 @@ function bounce3(){
     // console.log("H0: " + maxh0);
     // console.log("HH: " + maxhh);
 
+}
+
+function bounce4(){
+
+    var numBalls = 100;
+    var scale = CANVAS_HEIGHT/(2*Math.PI*FPS);
+    var accvel = 36*Math.PI;
+    if(init == 0){
+        for(var i = 0; i < numBalls; i++){
+            ballHeight[i] = (CANVAS_HEIGHT/2)*Math.sin(i/numBalls*2*Math.PI);
+            if(i < numBalls/2){
+                ballDirection[i] =  1;
+                ballSpeed[i] = Math.cos((ballHeight[i])/CANVAS_HEIGHT*Math.PI)*scale;
+            }
+            else{
+                ballDirection[i] =  1;
+                ballSpeed[i] = Math.cos((ballHeight[i])/CANVAS_HEIGHT*Math.PI)*scale;
+            }
+        }
+        init = 1;
+        
+        
+        
+    }
+
+    for(var i = 0; i < numBalls; i++){
+        drawBall(ballHeight[i],i/numBalls*2*Math.PI);
+        if(i < numBalls/2){
+            ballSpeed[i] = ballSpeed[i] - Math.sin((ballHeight[i])/CANVAS_HEIGHT*Math.PI)/accvel;
+        }
+        else{
+            ballSpeed[i] = ballSpeed[i] - Math.sin((ballHeight[i])/CANVAS_HEIGHT*Math.PI)/accvel;// / FPS;
+        }
+        ballHeight[i] = ballHeight[i] + ballDirection[i] * ballSpeed[i];// * ballSpeedMod/FPS;
+    }
+    if(mouseIsPressed){
+        mousePrevPressed = true;
+    }
+    if (mouseIsPressed){ // mousePrevPressed && !
+        var mouseRelX = mouseX - CANVAS_WIDTH/2;
+        var mouseRelY = mouseY - CANVAS_HEIGHT/2;
+        var newHeight = Math.max(-CANVAS_HEIGHT/2,Math.min(CANVAS_HEIGHT/2,Math.sqrt(mouseRelX*mouseRelX+mouseRelY*mouseRelY) * Math.sign(mouseRelX)));
+        var angle = 0;
+        if(mouseRelX == 0){
+            angle = 0;
+        }
+        else if(mouseRelY == 0){
+            angle = Math.PI/2;
+        }
+        else {
+            angle = Math.atan(mouseRelY/mouseRelX)+Math.PI/2;
+        }
+        var ballIndex = Math.floor((angle/2/Math.PI)*numBalls)%numBalls;
+        ballHeight[ballIndex] = newHeight;
+        ballSpeed[ballIndex] = Math.cos((ballHeight[ballIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        var prevIndex = (ballIndex-1)%numBalls;
+        var nextIndex = (ballIndex+1)%numBalls;
+        var elasticity = 1; // Between 0 and 1
+        // while(Math.abs(prevIndex - nextIndex) > 1){
+        //     var prevPrevIndex = (prevIndex+1)%numBalls;
+        //     ballHeight[prevIndex] = (1-elasticity)*ballHeight[prevIndex] + (elasticity)*ballHeight[prevPrevIndex];
+        //     if(prevIndex < numBalls/2){
+        //         ballSpeed[prevIndex] = Math.cos((ballHeight[prevIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     else{
+        //         ballSpeed[prevIndex] = -Math.cos((ballHeight[prevIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     var prevIndex = (prevIndex-1)%numBalls;
+
+        //     var prevNextIndex = (nextIndex-1)%numBalls;
+        //     ballHeight[nextIndex] = (1-elasticity)*ballHeight[nextIndex] + (elasticity)*ballHeight[prevNextIndex];
+        //     if(nextIndex < numBalls/2){
+        //         ballSpeed[nextIndex] = Math.cos((ballHeight[nextIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     else{
+        //         ballSpeed[nextIndex] = -Math.cos((ballHeight[nextIndex])/CANVAS_HEIGHT*Math.PI)*scale;
+        //     }
+        //     var nextIndex = (nextIndex+1)%numBalls;
+        // }
+        mousePrevPressed = false;
+    }
 }
 
 function drawBall(height,angle){
