@@ -36,7 +36,7 @@ function bounce(){
     if(mouseIsPressed){
         background(0);
     }
-    var numBalls = 10;
+    var numBalls = 100;
     var scale = CANVAS_HEIGHT/(2*Math.PI*FPS);
     var accvel = 36*Math.PI;
     if(init == 0){
